@@ -9,6 +9,13 @@
     margin-top: 40px;
   }
 }
+.Form-Title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
 .Form-Item {
   border-top: 1px solid #ddd;
   padding-top: 24px;
@@ -141,11 +148,4 @@
     width: 160px;
     font-size: 16px;
   }
-}
-.Form-Title {
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20px;
 }
