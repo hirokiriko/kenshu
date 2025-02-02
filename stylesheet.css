@@ -1,69 +1,159 @@
-/* ===== 見出しの中央寄せ ===== */
-.Form-Title {
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20px;
-}
-
-/* ===== フォーム全体の中央寄せ ===== */
+/* ===== フォーム全体のレイアウト ===== */
 .Form {
-  margin-top: 40px;
+  margin-top: 80px;
   margin-left: auto;
   margin-right: auto;
-  max-width: 90%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  max-width: 90%; /* 変更: 固定720px → 90%でより柔軟に */
 }
 
-/* ===== フォーム項目を中央寄せ ===== */
+@media screen and (max-width: 480px) {
+  .Form {
+    margin-top: 40px;
+  }
+}
+
+/* ===== フォームの各項目 ===== */
 .Form-Item {
-  display: flex;
-  flex-direction: column; /* 縦並びに */
-  align-items: center;
+  border-top: 1px solid #ddd;
+  padding-top: 24px;
+  padding-bottom: 24px;
   width: 100%;
-  max-width: 500px; /* 横幅を制限 */
-  padding: 10px 0;
+  display: flex;
+  align-items: center;
 }
 
-/* ===== ラベルも中央寄せ ===== */
+@media screen and (max-width: 480px) {
+  .Form-Item {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    flex-wrap: wrap;
+  }
+}
+
+.Form-Item:nth-child(5) {
+  border-bottom: 1px solid #ddd;
+}
+
+/* ===== ラベル部分 ===== */
 .Form-Item-Label {
-  text-align: center;
-  font-size: 16px;
+  flex-basis: 30%; /* 変更: max-width: 248px; → 柔軟なレイアウト */
+  letter-spacing: 0.05em;
   font-weight: bold;
+  font-size: 18px;
 }
 
-/* ===== 入力フィールドの中央寄せ ===== */
+@media screen and (max-width: 480px) {
+  .Form-Item-Label {
+    max-width: inherit;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+  }
+}
+
+.Form-Item-Label.isMsg {
+  margin-top: 8px;
+  margin-bottom: auto;
+}
+
+@media screen and (max-width: 480px) {
+  .Form-Item-Label.isMsg {
+    margin-top: 0;
+  }
+}
+
+/* 必須マーク */
+.Form-Item-Label-Required {
+  border-radius: 6px;
+  margin-right: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  width: 48px;
+  display: inline-block;
+  text-align: center;
+  background: #5bc8ac;
+  color: #fff;
+  font-size: 14px;
+}
+
+@media screen and (max-width: 480px) {
+  .Form-Item-Label-Required {
+    border-radius: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    width: 32px;
+    font-size: 10px;
+  }
+}
+
+/* ===== 入力フィールド ===== */
 .Form-Item-Input,
 .Form-Item-Textarea {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  background: #f8f8f8;
-  text-align: center; /* 入力テキストも中央揃え */
+  border-radius: 6px;
+  margin-left: 20px; /* 変更: 40px → 20px (間隔を適切に) */
+  padding-left: 1em;
+  padding-right: 1em;
+  flex: 1;
+  width: 100%;
+  max-width: 410px;
+  background: #eaedf2;
+  font-size: 18px;
 }
 
-/* ===== 送信ボタンの中央寄せ ===== */
+@media screen and (max-width: 480px) {
+  .Form-Item-Input,
+  .Form-Item-Textarea {
+    margin-left: 0; /* 変更: スマホでは左寄せ */
+    margin-top: 18px;
+    font-size: 15px;
+  }
+}
+
+/* テキストエリアの高さ調整 */
+.Form-Item-Textarea {
+  height: 216px;
+}
+
+@media screen and (max-width: 480px) {
+  .Form-Item-Textarea {
+    height: 200px;
+  }
+}
+
+/* ===== 送信ボタン ===== */
 .Form-Btn {
-  margin-top: 20px;
+  border-radius: 6px;
+  margin-top: 32px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  width: 280px;
   display: block;
-  width: 200px;
-  padding: 10px;
-  font-size: 16px;
+  letter-spacing: 0.05em;
   background: #5bc8ac;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 20px;
   cursor: pointer;
 }
 
-/* ボタンのホバーエフェクト */
+/* 変更: ホバー時のエフェクトを追加 */
 .Form-Btn:hover {
-  background: #489f89;
+  background: #489f89; /* 変更: ホバー時に少し暗く */
+  transition: 0.3s;
 }
+
+@media screen and (max-width: 480px) {
+  .Form-Btn {
+    margin-top: 24px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    width: 160px;
+    font-size: 16px;
+  }
+}
+
