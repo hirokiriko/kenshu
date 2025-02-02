@@ -8,8 +8,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $message = htmlspecialchars($_POST['message'], ENT_QUOTES, 'UTF-8');
 
     // 送信先のメールアドレス
-    $to = "your-email@example.com"; // ←ここに受信するメールアドレスを記入
-    $subject = "【お問い合わせ】" . $name . "様より";
+    $to = "info@kiriko.tech"; // ←ここに受信するメールアドレスを記入
+    $subject = "【研修お問い合わせ】" . $name . "様より";
 
     // メール本文
     $body = "会社名: " . $company . "\n"
