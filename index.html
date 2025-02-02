@@ -7,29 +7,38 @@
     <link rel="stylesheet" href="stylesheet.css"> <!-- CSSファイルを読み込む -->
 </head>
 <body>
-    <h1 class="Form-Title">研修お問い合わせフォーム</h1>
-    <form action="send_mail.php" method="post">
-        <div class="Form-Item">
-            <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>会社名</p>
-            <input type="text" name="company" class="Form-Item-Input" placeholder="例）株式会社令和" required>
-        </div>
-        <div class="Form-Item">
-            <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>氏名</p>
-            <input type="text" name="name" class="Form-Item-Input" placeholder="例）山田太郎" required>
-        </div>
-        <div class="Form-Item">
-            <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>電話番号</p>
-            <input type="text" name="phone" class="Form-Item-Input" placeholder="例）000-0000-0000" required>
-        </div>
-        <div class="Form-Item">
-            <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>メールアドレス</p>
-            <input type="email" name="email" class="Form-Item-Input" placeholder="例）example@gmail.com" required>
-        </div>
-        <div class="Form-Item">
-            <p class="Form-Item-Label isMsg"><span class="Form-Item-Label-Required">必須</span>お問い合わせ内容</p>
-            <textarea name="message" class="Form-Item-Textarea" required></textarea>
-        </div>
-        <input type="submit" class="Form-Btn" value="送信する">
-    </form>
+
+    <!-- 追加: フォーム全体を中央に配置するための親コンテナ -->
+    <div class="Form-Wrapper">
+
+        <!-- 追加: 見出し -->
+        <h1 class="Form-Title">研修お問い合わせフォーム</h1>
+
+        <form action="send_mail.php" method="post" class="Form">
+            <div class="Form-Item">
+                <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>会社名</p>
+                <input type="text" name="company" class="Form-Item-Input" placeholder="例）株式会社令和" required>
+            </div>
+            <div class="Form-Item">
+                <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>氏名</p>
+                <input type="text" name="name" class="Form-Item-Input" placeholder="例）山田太郎" required>
+            </div>
+            <div class="Form-Item">
+                <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>電話番号</p>
+                <input type="text" name="phone" class="Form-Item-Input" placeholder="例）000-0000-0000" required>
+            </div>
+            <div class="Form-Item">
+                <p class="Form-Item-Label"><span class="Form-Item-Label-Required">必須</span>メールアドレス</p>
+                <input type="email" name="email" class="Form-Item-Input" placeholder="例）example@gmail.com" required>
+            </div>
+            <div class="Form-Item">
+                <p class="Form-Item-Label isMsg"><span class="Form-Item-Label-Required">必須</span>お問い合わせ内容</p>
+                <textarea name="message" class="Form-Item-Textarea" required></textarea>
+            </div>
+            <input type="submit" class="Form-Btn" value="送信する">
+        </form>
+
+    </div> <!-- Form-Wrapper 終了 -->
+
 </body>
 </html>
