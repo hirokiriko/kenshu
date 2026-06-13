@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GENBA Search（デモ）— クレームの用語から、方言で書かれた漏れ公知資料を拾う</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFAF7;
+  --ink:#1A1C21;
+  --ink-soft:#4A4E57;
+  --ai:#2C4A6E;
+  --ai-pale:#E8EEF5;
+  --shu:#C2403A;
+  --shu-pale:#FAEBE8;
+  --rule:#DCD9D1;
+  --card:#FFFFFF;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:17px}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif;
+  line-height:1.85;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--ai)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+
+header{border-bottom:1px solid var(--rule);background:var(--card)}
+.head-inner{display:flex;align-items:baseline;gap:16px;padding:18px 0;flex-wrap:wrap}
+.brand{font-family:"Shippori Mincho",serif;font-weight:700;font-size:1.45rem;letter-spacing:.04em}
+.brand .demo-tag{
+  font-family:"Zen Kaku Gothic New",sans-serif;font-size:.72rem;font-weight:700;color:var(--shu);
+  border:1.5px solid var(--shu);border-radius:4px;padding:1px 7px;margin-left:10px;vertical-align:3px;letter-spacing:.08em;
+}
+.tagline{color:var(--ink-soft);font-size:.88rem}
+
+.hero{padding:44px 0 8px}
+.hero h1{font-family:"Shippori Mincho",serif;font-weight:600;font-size:1.85rem;line-height:1.5;letter-spacing:.02em}
+.hero h1 .shu{color:var(--shu)}
+.hero p.lede{margin-top:14px;color:var(--ink-soft);max-width:48em;font-size:.98rem}
+
+.usecase{
+  margin-top:26px;background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);
+  padding:18px 22px;
+}
+.usecase .lab{font-size:.78rem;font-weight:700;letter-spacing:.08em;color:var(--shu)}
+.usecase .flow{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.92rem;color:var(--ink-soft);
+}
+.usecase .flow b{color:var(--ink)}
+.usecase .arrow{color:var(--shu);font-weight:700}
+
+.field-row{display:flex;align-items:center;gap:12px;margin-top:26px;flex-wrap:wrap}
+.field-label{font-size:.85rem;font-weight:700;color:var(--ink-soft);letter-spacing:.06em}
+.field-chip{font-size:.9rem;padding:7px 16px;border-radius:999px;border:1.5px solid var(--ai);background:var(--ai);color:#fff;font-weight:700}
+.field-chip.off{background:transparent;color:var(--ink-soft);border-color:var(--rule);font-weight:500}
+.field-chip.off small{font-size:.72rem;margin-left:4px;opacity:.7}
+
+.claim-label{margin-top:24px;font-size:.85rem;font-weight:700;color:var(--ink-soft);letter-spacing:.04em}
+.claim-label span{font-weight:500;color:#9aa0a8}
+textarea#claim{
+  width:100%;margin-top:8px;background:var(--card);border:1.5px solid var(--ink);border-radius:var(--radius);
+  padding:16px 18px;font-family:inherit;font-size:1rem;line-height:1.8;color:var(--ink);resize:vertical;min-height:96px;
+  box-shadow:0 3px 0 rgba(26,28,33,.10);
+}
+textarea#claim:focus{outline:3px solid var(--ai);outline-offset:1px}
+.go-row{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+button#go{
+  font-family:inherit;font-weight:700;font-size:.98rem;letter-spacing:.08em;background:var(--ink);color:#fff;
+  border:none;border-radius:7px;padding:13px 30px;cursor:pointer;transition:background .15s;
+}
+button#go:hover{background:var(--shu)}
+button#go:focus-visible,.ex-chip:focus-visible{outline:3px solid var(--shu);outline-offset:2px}
+
+.examples{margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.examples .lab{font-size:.82rem;color:var(--ink-soft);font-weight:700}
+.ex-chip{
+  font-family:inherit;font-size:.85rem;cursor:pointer;background:var(--card);border:1px solid var(--rule);
+  border-radius:7px;padding:8px 14px;color:var(--ink);transition:border-color .15s,background .15s;text-align:left;max-width:340px;
+}
+.ex-chip:hover{border-color:var(--shu);background:var(--shu-pale)}
+.ex-chip b{color:var(--shu);font-weight:700}
+
+#notice{display:none;margin-top:16px;font-size:.9rem;color:var(--shu);background:var(--shu-pale);border:1px solid var(--shu);border-radius:8px;padding:10px 16px}
+
+#loading{display:none;margin:40px 0 10px}
+.steps{display:flex;flex-direction:column;gap:10px}
+.step{display:flex;align-items:center;gap:12px;color:#9aa0a8;font-size:.95rem;transition:color .3s}
+.step .dot{width:10px;height:10px;border-radius:50%;background:var(--rule);flex:none;transition:background .3s}
+.step.on{color:var(--ink)} .step.on .dot{background:var(--shu);animation:pulse 1s infinite}
+.step.done{color:var(--ink-soft)} .step.done .dot{background:var(--ai)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+
+#results{display:none;padding:34px 0 60px}
+.kw-box{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:16px 20px;margin-bottom:22px}
+.kw-box .t{font-size:.8rem;font-weight:700;letter-spacing:.06em;color:var(--ink-soft)}
+.kw{display:inline-block;background:var(--ai-pale);border:1px solid var(--ai);color:var(--ai);border-radius:999px;padding:3px 13px;margin:7px 6px 0 0;font-weight:700;font-size:.9rem}
+
+.contrast{display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin-bottom:34px;border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden}
+.contrast .cell{padding:20px 22px;text-align:center}
+.contrast .cell.normal{background:#F3F2EE}
+.contrast .cell.salv{background:var(--shu-pale)}
+.contrast .cell .num{font-family:"Shippori Mincho",serif;font-size:2rem;font-weight:700;line-height:1.1}
+.contrast .cell.normal .num{color:var(--ink-soft)}
+.contrast .cell.salv .num{color:var(--shu)}
+.contrast .cell .lab{font-size:.84rem;margin-top:4px;color:var(--ink-soft)}
+.contrast .cell.salv .lab{color:#8d2f2b;font-weight:700}
+.contrast .mid{display:flex;align-items:center;padding:0 8px;background:var(--card);color:var(--shu);font-weight:700;font-size:1.4rem}
+
+.sec-head{display:flex;align-items:baseline;gap:14px;margin:0 0 8px;flex-wrap:wrap}
+.sec-head h2{font-family:"Shippori Mincho",serif;font-weight:600;font-size:1.25rem;letter-spacing:.03em}
+.sec-head .count{font-size:.85rem;color:var(--ink-soft)}
+.sec-note{font-size:.88rem;color:var(--ink-soft);margin-bottom:18px;max-width:52em}
+
+.normhit{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:14px 20px;margin-bottom:12px}
+.normhit .pub{font-size:.8rem;color:var(--ink-soft)}
+.normhit h3{font-family:"Shippori Mincho",serif;font-weight:600;font-size:1.02rem;margin:1px 0 4px}
+.normhit p{font-size:.9rem;color:var(--ink-soft);line-height:1.8}
+.buried{font-size:.85rem;color:var(--ink-soft);background:#F3F2EE;border-radius:6px;padding:9px 14px;margin-top:6px}
+.buried::before{content:"\22EF  ";color:#9aa0a8}
+
+.legend-row{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:30px 0 18px}
+.legend{display:flex;gap:20px;flex-wrap:wrap;align-items:center;font-size:.84rem;color:var(--ink-soft)}
+.legend .sw{display:inline-block;width:1.6em;height:1em;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.legend .sw.shu{background:var(--shu-pale);border-bottom:2px solid var(--shu)}
+.legend .sw.ai{background:var(--ai-pale);border-bottom:2px solid var(--ai)}
+.toggle{display:flex;align-items:center;gap:9px;font-size:.86rem;font-weight:700;color:var(--ink);cursor:pointer;user-select:none}
+.toggle input{width:18px;height:18px;accent-color:var(--shu);cursor:pointer}
+
+.salvage{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);margin-bottom:26px;overflow:hidden;border-left:5px solid var(--shu)}
+.salv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px 24px 14px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.salv-head .pub{font-size:.82rem;color:var(--ink-soft);letter-spacing:.04em}
+.salv-head h3{font-family:"Shippori Mincho",serif;font-weight:600;font-size:1.13rem;margin-top:2px}
+.salv-head .meta{font-size:.82rem;color:var(--ink-soft);margin-top:3px}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;border-radius:4px;padding:2px 10px;margin-top:7px;letter-spacing:.04em;color:var(--shu);background:var(--shu-pale);border:1px solid var(--shu)}
+.scorebox{text-align:right;flex:none}
+.scorebox .num{font-family:"Shippori Mincho",serif;font-size:1.5rem;font-weight:700;color:var(--shu);line-height:1.1}
+.scorebox .lab{font-size:.7rem;color:var(--ink-soft);letter-spacing:.06em}
+
+.salv-body{padding:18px 24px 6px}
+.passage{font-size:.97rem;line-height:2.05}
+.passage .para-no{font-weight:700;color:var(--ink-soft);font-size:.85rem;margin-right:.5em}
+mark{padding:0 2px;border-radius:2px;transition:background .2s,border-color .2s}
+mark.s{background:var(--shu-pale);border-bottom:2.5px solid var(--shu)}
+mark.n{background:var(--ai-pale);border-bottom:2.5px solid var(--ai)}
+body.nohi mark.s{background:transparent;border-bottom-color:transparent}
+
+.map{margin:16px 0 4px;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.map .mrow{display:grid;grid-template-columns:1fr 2.2em 1fr;border-top:1px solid var(--rule)}
+.map .mrow:first-child{border-top:none}
+.map .mhd{background:#F3F2EE;font-size:.74rem;font-weight:700;letter-spacing:.04em;color:var(--ink-soft)}
+.map .c{padding:9px 14px;font-size:.9rem;line-height:1.6}
+.map .c.kw{color:var(--ai);font-weight:500}
+.map .c.gb{color:#8d2f2b;font-weight:500}
+.map .mid{display:flex;align-items:center;justify-content:center;color:var(--shu);font-weight:700}
+
+.reason{margin:14px 0 20px;background:#FCF9F4;border:1px dashed var(--rule);border-radius:8px;padding:14px 18px}
+.reason h4{font-size:.8rem;letter-spacing:.08em;color:var(--shu);font-weight:700;margin-bottom:7px}
+.reason h4::before{content:"\270E  "}
+.reason p{font-size:.88rem;line-height:1.9;color:var(--ink-soft)}
+.reason p b{color:var(--ink)}
+
+.callout{background:var(--shu-pale);border:1px solid var(--shu);border-radius:var(--radius);padding:16px 20px;margin:6px 0 30px;font-size:.9rem;color:#7a2a26;line-height:1.85}
+.callout b{color:#5e1f1c}
+
+footer{border-top:1px solid var(--rule);padding:26px 0 50px;color:var(--ink-soft);font-size:.82rem}
+footer .co{font-weight:700;color:var(--ink)}
+
+@media(max-width:760px){
+  html{font-size:16px}
+  .hero h1{font-size:1.45rem}
+  .contrast{grid-template-columns:1fr}
+  .contrast .mid{padding:6px 0}
+}
+@media(prefers-reduced-motion:reduce){.step.on .dot{animation:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-inner">
+    <div class="brand">GENBA Search<span class="demo-tag">DEMO / PoC</span></div>
+    <div class="tagline">無効資料調査支援 — クレームの用語から、方言で書かれた漏れ公知資料を拾う</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>クレームの正式用語で検索しても、<br><span class="shu">「ビビリが出る」</span>としか書かれていない公知資料は漏れる。<br>その方言表現を<span class="shu">拾い上げ、ハイライト</span>する。</h1>
+    <p class="lede">無効資料調査では、対象特許（イ号）クレームの用語をそのまま検索語にします。しかし同じ概念を現場の方言で記した公知資料は、その用語を含まないために検索結果から漏れがちです。本システムは、クレーム用語に対応する分野特有の表現を網羅して公知資料を探索し、見逃しやすい該当箇所を抽出・強調します。</p>
+
+    <div class="usecase">
+      <div class="lab">この機能の流れ</div>
+      <div class="flow">
+        <span><b>イ号クレーム</b>の用語で検索<br><small>例：周期的な相対変位／縞状の模様</small></span>
+        <span class="arrow">&rarr;</span>
+        <span>用語を含まないが<b>同概念を方言で記した</b>公知資料を探索</span>
+        <span class="arrow">&rarr;</span>
+        <span><b>該当箇所をハイライト</b>し、無効資料候補として提示</span>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <span class="field-label">産業分野</span>
+      <span class="field-chip">切削加工・工作機械</span>
+      <span class="field-chip off">半導体製造 <small>準備中</small></span>
+      <span class="field-chip off">射出成形 <small>準備中</small></span>
+    </div>
+
+    <div class="claim-label">対象特許（イ号）のクレーム <span>／ 無効化したい請求項の文言を貼り付けます</span></div>
+    <textarea id="claim" spellcheck="false"></textarea>
+
+    <div class="go-row">
+      <button id="go" type="button">方言を含めて公知資料を探索</button>
+    </div>
+
+    <div class="examples">
+      <span class="lab">クレーム例：</span>
+      <button class="ex-chip" data-id="bibiri"><b>例1</b> 工具刃先と被削材との間に生じる周期的な相対変位が次第に成長する現象を抑制し、加工面に縞状の模様が形成されることを防止する…</button>
+      <button class="ex-chip" data-id="gyakuchaku"><b>例2</b> 難削材の切削において、被削材成分が切れ刃表面に凝着することを抑制する被覆切削工具…</button>
+    </div>
+    <div id="notice"></div>
+  </section>
+
+  <section id="loading" aria-live="polite">
+    <div class="steps">
+      <div class="step" id="st1"><span class="dot"></span>クレームから検索キーワードを抽出しています…</div>
+      <div class="step" id="st2"><span class="dot"></span>通常キーワードで公知資料を取得しています…</div>
+      <div class="step" id="st3"><span class="dot"></span>キーワードを含まない「方言」表現の公知資料を照合しています…</div>
+    </div>
+  </section>
+
+  <section id="results" aria-live="polite">
+
+    <div class="kw-box">
+      <span class="t">クレームから抽出した検索キーワード</span><br>
+      <span id="kwlist"></span>
+    </div>
+
+    <div class="contrast">
+      <div class="cell normal"><div class="num" id="normnum"></div><div class="lab">通常キーワード検索のヒット件数<br>（重要文献が埋もれるおそれ）</div></div>
+      <div class="mid">＋</div>
+      <div class="cell salv"><div class="num" id="salvnum"></div><div class="lab">本システムが追加で発見した<br>「方言」無効資料候補</div></div>
+    </div>
+
+    <div class="sec-head"><h2>① 通常キーワード検索の結果</h2><span class="count" id="acount"></span></div>
+    <p class="sec-note">クレームの用語「<span id="kwinline"></span>」を含む公知資料です。件数が多く、本当に効く文献が埋もれやすいのがこの調査の難所です。</p>
+    <div id="blockA"></div>
+
+    <div class="legend-row">
+      <div class="legend">
+        <span><span class="sw shu"></span>キーワード不一致だが同概念を示唆する方言表現</span>
+        <span><span class="sw ai"></span>クレームの検索キーワードと一致</span>
+      </div>
+      <label class="toggle"><input type="checkbox" id="hi" checked>方言箇所をハイライト表示</label>
+    </div>
+
+    <div class="sec-head"><h2 style="color:var(--shu)">② 方言表現で追加抽出した無効資料候補</h2><span class="count" id="bcount"></span></div>
+    <p class="sec-note"><b>検索キーワードを一切含まない</b>のに、同じ概念を現場の言い回しで記述している公知資料です。通常検索では漏れていた候補で、これがこのシステムの主眼です。</p>
+    <div id="blockB"></div>
+
+    <div class="callout" id="callout"></div>
+
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><span class="co">KIRIKO.tech株式会社</span> — GENBA Search 動作イメージ確認用デモ（PoC / MVP）</p>
+    <p>本ページの公報番号・出願人・本文は、すべて動作イメージ確認のために作成した<b>架空のダミーデータ</b>であり、実在の特許公報ではありません。ヒット件数や検索処理もブラウザ内のサンプルで模擬しています。</p>
+  </div>
+</footer>
+
+<script>
+const DATA = {
+bibiri: {
+  claim: "工具刃先と被削材との間に生じる周期的な相対変位が次第に成長する現象を抑制し、加工面に縞状の模様が形成されることを防止する切削工具。",
+  keywords: ["周期的な相対変位","相対変位の成長","縞状の模様","加工面の模様"],
+  normCount: 287,
+  blockA: [
+    { pub:"特開2021-145872（ダミー）", title:"制振機能を備えた工作機械", meta:"出願人：尾張電機工業株式会社（架空）",
+      text:'主軸の加速度から<mark class="n">周期的な相対変位</mark>を検知し、回転数を可変制御することで<mark class="n">加工面の模様</mark>の発生を防止する。' },
+    { pub:"特許第7402113号（ダミー）", title:"びびり振動の解析方法", meta:"権利者：木曽川解析研究所（架空）",
+      text:'本方法は、切削中に生じる<mark class="n">相対変位の成長</mark>を周波数解析し、安定限界を予測するものである。' }
+  ],
+  buried: "…ほか 285 件（同様にキーワードを含む文献）",
+  blockB: [
+    {
+      pub:"特開2019-038214（ダミー）", title:"不等分割エンドミル", meta:"出願人：知多ツール製作所（架空）／ IPC: B23C 5/10",
+      score:"0.91", para:"【0017】",
+      passage:'本発明のエンドミルによれば、<mark class="s">アルミの仕上げ面に出るビビリを、工具側の刃先形状の工夫によって抑える</mark>ことができる。これにより、<mark class="s">削り目に現れる波目（なみめ）</mark>のない良好な面が安定して得られる。',
+      map:[
+        { kw:"周期的な相対変位が次第に成長する現象", gb:"ビビリ（が出る）" },
+        { kw:"縞状の模様", gb:"削り目に現れる波目（なみめ）" },
+        { kw:"（相対変位を）抑制する／防止する", gb:"工具側の刃先形状の工夫によって抑える" }
+      ],
+      reason:'検索語「周期的な相対変位」「縞状の模様」は本文に<b>一切現れません</b>。しかし「ビビリ」は再生びびり振動、すなわち周期的な相対変位の成長そのものを指す現場語であり、「削り目の波目」は縞状の模様に相当します。さらに「工具側で抑える」という解決手段もイ号クレームと一致するため、<b>通常検索では漏れていた強い無効資料候補</b>と判断しました。'
+    },
+    {
+      pub:"実開平08-006621（ダミー）", title:"旋削用バイト", meta:"出願人：三河精工株式会社（架空）／ IPC: B23B 27/00",
+      score:"0.78", para:"【0005】",
+      passage:'切削速度によっては<mark class="s">バイトが鳴き（びびり）、加工面にこすれたような艶ムラ</mark>が出ることがある。本考案はすくい角を最適化し、これを<mark class="s">刃物側で抑える</mark>。',
+      map:[
+        { kw:"周期的な相対変位の成長", gb:"バイトが鳴く／びびる" },
+        { kw:"縞状の模様", gb:"こすれたような艶ムラ" },
+        { kw:"（相対変位を）抑制する", gb:"刃物側で抑える" }
+      ],
+      reason:'「バイトが鳴く」「びびり」は工具のびびり振動を指す現場語、「艶ムラ」は加工面に周期的に現れる外観不良の言い回しです。検索語とは表記が全く異なるため通常検索からは漏れますが、概念・解決手段ともイ号クレームに対応する候補です。'
+    }
+  ],
+  callout: 'この調査では、上記②の <b>287件の外側、もしくは内側に埋もれていた方言文献</b> を拾い上げています。仮に通常検索の結果に含まれていた場合でも、件数が多いと見逃しがちです。本システムは各文献中の<b>方言該当箇所だけを抽出してハイライト</b>するため、大量ヒット時でも無効資料候補を見落としにくくなります（上のチェックでハイライトの有無を切り替えられます）。'
+},
+gyakuchaku: {
+  claim: "難削材の切削において、被削材成分が切れ刃表面に凝着することを抑制する被覆切削工具。",
+  keywords: ["凝着","被削材成分の移着","難削材"],
+  normCount: 196,
+  blockA: [
+    { pub:"特開2020-097431（ダミー）", title:"難削材加工用コーティング工具", meta:"出願人：渥美超硬株式会社（架空）",
+      text:'本被膜は表面エネルギーを低減し、<mark class="n">難削材</mark>切削時の<mark class="n">凝着</mark>を抑制する。' },
+    { pub:"特許第7188204号（ダミー）", title:"切削工具用硬質皮膜", meta:"権利者：豊川コーティング株式会社（架空）",
+      text:'皮膜の最表層を平滑化することで、<mark class="n">被削材成分の移着</mark>の起点形成を抑える。' }
+  ],
+  buried: "…ほか 194 件（同様にキーワードを含む文献）",
+  blockB: [
+    {
+      pub:"特開2018-205517（ダミー）", title:"ステンレス深穴加工用ドリル", meta:"出願人：碧南スチール工業（架空）／ IPC: B23B 51/06",
+      score:"0.88", para:"【0023】",
+      passage:'<mark class="s">ステンレスの深穴では刃先が焼き付き、刃に材料が持っていかれる</mark>ことがある。本ドリルは油穴位置を見直し、<mark class="s">この焼き付きを防ぐ</mark>。',
+      map:[
+        { kw:"凝着", gb:"焼き付き／刃に材料が持っていかれる" },
+        { kw:"被削材成分の移着", gb:"材料が（刃に）持っていかれる" },
+        { kw:"難削材", gb:"ステンレス（の深穴）" }
+      ],
+      reason:'「焼き付き」「刃に材料が持っていかれる」は、被削材成分が切れ刃に移着・固着する現象（＝凝着）を指す現場語です。「ステンレス」は難削材の代表で、検索語「難削材」を含まなくても対象に該当します。検索語が一つも現れない<b>漏れ候補</b>です。'
+    },
+    {
+      pub:"特開2017-141980（ダミー）", title:"切削インサート", meta:"出願人：知立工具株式会社（架空）／ IPC: B23B 27/14",
+      score:"0.74", para:"【0009】",
+      passage:'ねばい材を削ると<mark class="s">刃先に金属がべったり付いて（構成刃先）、これが取れる時に面がむしれる</mark>。本インサートは刃先処理によりこれを抑える。',
+      map:[
+        { kw:"凝着", gb:"刃先に金属がべったり付く（構成刃先）" },
+        { kw:"被削材成分の移着", gb:"金属が刃先に付く" },
+        { kw:"難削材", gb:"ねばい材" }
+      ],
+      reason:'「べったり付く」「構成刃先」「むしれる」は凝着・溶着に起因する現象群の現場語です。表記はクレーム用語と全く異なりますが、同概念を示しており候補として抽出しました。'
+    }
+  ],
+  callout: '通常検索の196件の外側、もしくは内側に埋もれていた方言文献を拾い上げています。件数が多い調査では、たとえ結果に含まれていても見逃しがちです。本システムは各文献の<b>方言該当箇所だけをハイライト</b>するため、見落としを減らせます。'
+}
+};
+
+const $ = id => document.getElementById(id);
+function renderKw(arr){ return arr.map(k=>'<span class="kw">'+k+'</span>').join(""); }
+function renderA(items, buried){
+  return items.map(h=>'<div class="normhit"><div class="pub">'+h.pub+'</div><h3>'+h.title+'</h3><p>'+h.meta+'<br>'+h.text+'</p></div>').join("") + '<div class="buried">'+buried+'</div>';
+}
+function renderMap(map){
+  const head = '<div class="mrow mhd"><div class="c">イ号クレームの用語</div><div class="mid"></div><div class="c">この公知資料での表現（方言）</div></div>';
+  const rows = map.map(m=>'<div class="mrow"><div class="c kw">'+m.kw+'</div><div class="mid">&hArr;</div><div class="c gb">'+m.gb+'</div></div>').join("");
+  return '<div class="map">'+head+rows+'</div>';
+}
+function renderB(items){
+  return items.map((h,i)=>'<article class="salvage"><div class="salv-head"><div><div class="pub">候補'+(i+1)+'．'+h.pub+'</div><h3>'+h.title+'</h3><div class="meta">'+h.meta+'</div><span class="badge">キーワード不一致・方言マッチ</span></div><div class="scorebox"><div class="num">'+h.score+'</div><div class="lab">類推スコア</div></div></div><div class="salv-body"><div class="passage"><span class="para-no">'+h.para+'</span>'+h.passage+'</div>'+renderMap(h.map)+'<div class="reason"><h4>なぜ通常検索では漏れ、本システムは拾えたか</h4><p>'+h.reason+'</p></div></div></article>').join("");
+}
+
+let timers=[];
+function run(id){
+  const d = DATA[id];
+  $("notice").style.display="none";
+  $("results").style.display="none";
+  $("loading").style.display="block";
+  ["st1","st2","st3"].forEach(s=>$(s).className="step");
+  timers.forEach(clearTimeout); timers=[];
+  timers.push(setTimeout(()=>$("st1").classList.add("on"),50));
+  timers.push(setTimeout(()=>{$("st1").className="step done";$("st2").classList.add("on")},700));
+  timers.push(setTimeout(()=>{$("st2").className="step done";$("st3").classList.add("on")},1450));
+  timers.push(setTimeout(()=>{
+    $("st3").className="step done";
+    $("loading").style.display="none";
+    $("kwlist").innerHTML = renderKw(d.keywords);
+    $("normnum").textContent = d.normCount.toLocaleString()+"件";
+    $("salvnum").textContent = d.blockB.length+"件";
+    $("acount").textContent = d.normCount.toLocaleString()+"件（代表例を表示）";
+    $("kwinline").textContent = d.keywords.slice(0,2).join("」「");
+    $("blockA").innerHTML = renderA(d.blockA, d.buried);
+    $("bcount").textContent = d.blockB.length+"件";
+    $("blockB").innerHTML = renderB(d.blockB);
+    $("callout").innerHTML = d.callout;
+    $("results").style.display="block";
+    $("results").scrollIntoView({behavior:"smooth",block:"start"});
+  },2150));
+}
+document.querySelectorAll(".ex-chip").forEach(b=>{
+  b.addEventListener("click",()=>{ $("claim").value = DATA[b.dataset.id].claim; run(b.dataset.id); });
+});
+function detect(t){
+  if(/縞状|相対変位|ビビ|びび|振動/.test(t)) return "bibiri";
+  if(/凝着|移着|焼き?付|難削|ステンレス|構成刃先/.test(t)) return "gyakuchaku";
+  return null;
+}
+$("go").addEventListener("click",()=>{
+  const v = $("claim").value.trim();
+  if(!v){ $("claim").focus(); return; }
+  const id = detect(v);
+  if(id){ run(id); }
+  else{
+    $("notice").style.display="block";
+    $("notice").innerHTML = "本デモ版で照合できるのは「ビビリ（びびり振動）」系と「凝着（焼き付き）」系のクレームです。上のクレーム例をクリックしてお試しください（製品版では分野辞書全体に対応します）。";
+  }
+});
+$("hi").addEventListener("change",e=>{ document.body.classList.toggle("nohi", !e.target.checked); });
+$("claim").value = DATA.bibiri.claim;
+</script>
+</body>
+</html>
